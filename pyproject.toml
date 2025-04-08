@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-groceries-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asyncio>=3.4.3",
+    "langchain>=0.2.17",
+    "langchain-core>=0.3.21",
+    "langchain-milvus>=0.1.7",
+    "langgraph>=0.2.56",
+    "python-dotenv>=1.0.1",
+    "langchain-mcp-adapters",
+    "langchain-ollama",
+    "ollama",
+    "mcp>=1.0.0",
+    "langchain-google-genai",
+    "pydantic",
+    "httpx>=0.28.1",
+    "argparse>=1.4.0",
+]
+
+[tool.mypy]
+exclude = [
+    "venv",
+    "build",
+    "dist",
+]
+
+[dependency-groups]
+lint = [
+    "mypy>=1.15.0",
+    "ruff>=0.11.5",
+]
+
+
+[project.scripts]
+start="mcp_groceries_server.agent.example:main"
+mcp-groceries-server="mcp_groceries_server.server:main"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["F401"]
