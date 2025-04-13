@@ -5,19 +5,20 @@ MCP Server for different Groceries vendor API, enabling searching groceries and 
 
 ### Features
 
-- **Automatic cart creation**: add items to the cart based on provided list
+- **Automatic cart creation**: add items to the cart based on a provided list
 - **Groceries lookup**: lookup for groceries using vendor API
 
 ## Tools
 1. `add_items_to_cart`
-  - Add groceries to basket. Result is updated cart
+  - Add groceries to the basket. 
   - Inputs:
     - `items`(list[CartItemScheam]): items to add to the cart
+  - Returns: Updated cart
 2. `search`
    - Lookup for item in the vendor
    - Inputs:
      - `item` (string): Items to 
-   - Returns: Updated cart
+   - Returns: list of items corresponding to search term
 
 
 ## Setup
@@ -26,8 +27,8 @@ MCP Server for different Groceries vendor API, enabling searching groceries and 
 ## Extract Environment Variables
 
 ### Rami Levy
-1. Login to the Rami Levy site
-2. In developer tools (click on F12) execute:
+1. log in to the Rami Levy site
+2. In developer tools (click on F12) and execute:
 ```js
 const state = JSON.parse(localStorage.ramilevy);
 console.log({
