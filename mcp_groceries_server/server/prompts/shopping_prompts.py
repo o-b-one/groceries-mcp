@@ -10,7 +10,7 @@ class UserMessage:
 
 @server.prompt()
 def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
-    """USe this prompt to determain how to start the shopping process"""
+    """Use this prompt to determain how to start the shopping process"""
     return [
         UserMessage(
             content=f"""
@@ -21,41 +21,31 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             **Important:**
             - Make sure that you don't buy more than it's needed for each article.
             - If quantity not defined use the default of 1
+            - Be frugal, for each item in the list evaluate price and quantity_evaluation and choose the most cost efficient item
             - Remove items from the existing basket if not found in the new list
             - Evaluate the best grocery from the search based on text similarity and price per gram
             - Translate the groceries to Hebrew before search
             - If an item is **out of stock**, find the best alternative. Notice the user cannot answer your questions, you should decide on your own
             - Example substitutions:
-            - If Gruyère cheese is unavailable, select another semi-hard cheese.
-            - If Tahini is unavailable, a sesame-based alternative may work.
+                - If Gruyère cheese is unavailable, select another semi-hard cheese.
+                - If Tahini is unavailable, a sesame-based alternative may work.
 
 
             **Preferences:**
             {preferences or "None"}
 
-            ---
-            """  # noqa: E501
-        ),
-        UserMessage(
-            content=f"""
-                ### Step 1: Add Items to the Basket
-
-                - Condider the preferences
-                #### Shopping List:
+            ### Step 1: 
+            - Search each item in the list while considering the user preferences.
+            - Collect the IDs as you will need them for the next step to update the basekt
+            - Use the relevant tools to add and remove items to the basket based on the findings from previous step
+            #### Shopping List:
                 {shopping_list}
-                ---
-            """
-        ),
-        UserMessage(
-            content="""
-            ### Step 2: Remove unlisted items from the Basket
 
+            **Important:**
+            - You must follow the list by adding only items found in the list and by the user preferences, nothing more
+            - If the basket contains items not found in the list you should remove those items
             ---
-            """
-        ),
-        UserMessage(
-            content="""
-            ### Step 3: Conclusion
+            ### Step 2: Conclusion
             
             Return the user the following details:
             
@@ -69,15 +59,3 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             """
         ),
     ]
-
-
-# @server.prompt()
-# def place_order(
-# preferred_time_window: str,
-# payment_method: typing.Optional[str] = None
-# ) -> List[UserMessage]:
-#     return [
-#         UserMessage(
-#             content=f""""""
-#         ),
-#     ]

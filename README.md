@@ -57,7 +57,7 @@ To use this with Claude Desktop, add the following to your `claude_desktop_confi
         "run",
         "mcp-groceries-server",
         "--vendor",
-        vendorName # rami-levy e.g
+        vendorName # rami-levy, keshet e.g
       ],
       "env":{
         "VENDOR_API_KEY": "<YOUR_API_TOKEN>",

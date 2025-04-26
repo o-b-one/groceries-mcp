@@ -37,12 +37,14 @@ class GroceriesAgent:
                 "run",
                 "mcp-groceries-server",
                 "--vendor",
-                "rami-levy",
+                "keshet"
+                # "rami-levy",
             ],
             transport="stdio",
             env=dict(
                 VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY"),
-                VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID")
+                VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID"),
+                CART_ID=os.environ.get("CART_ID"),
             )
         )
         async with stdio_client(server_params) as (read, write):
@@ -56,12 +58,14 @@ class GroceriesAgent:
                     arguments={
                         "shopping_list": shopping_list,
                         "preferences": """
-                    - נייר טואלט search for לילי מגה רול instead
+                    - toilet parper search instead for:
+                        lily toilet paper
                     - חלב search for חלב נטול לקטוז instead
-                    - For dish soap choose Fairy
+                    - Dish soap look for Fairy or פיירי לימון
+                    - Chicken Snitzel must not have corn
                     """,
                     },
                 )
                 agent = create_react_agent(self._model, tools, debug=debug)
                 prompts = [msg.content.text for msg in prompts_result.messages]
-                return await agent.ainvoke({"messages": prompts}, {"recursion_limit": 10})
+                return await agent.ainvoke({"messages": prompts}, {"recursion_limit": 15})

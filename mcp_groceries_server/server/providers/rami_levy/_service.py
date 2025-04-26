@@ -4,7 +4,7 @@ import typing
 
 from httpx import AsyncClient
 
-from . import _types
+from mcp_groceries_server.server import types 
 
 BASE_URL = "https://www.rami-levy.co.il/api"
 CATALOG_ENDPOINT = f"{BASE_URL}/catalog"
@@ -69,7 +69,7 @@ async def get_cart() -> list[dict]:
     cart = response.get("cart", {}) or {}
     cart_items = cart.get("items", {}) or {}
     return [
-        _types.CartItemSchema(id=str(_id), quantity=str(quantity)).model_dump()
+        types.CartItemSchema(id=str(_id), quantity=str(quantity)).model_dump()
         for _id, quantity in cart_items.items()
     ]
 
@@ -94,7 +94,7 @@ async def _trigger_update(items: dict[str, int]) -> typing.Coroutine[None, None,
     )
 
 
-async def remove_from_cart(items_to_remove: list[_types.CartItemSchema]) -> list[dict]:
+async def remove_from_cart(items_to_remove: list[types.CartItemSchema]) -> list[dict]:
     cart = await _get_cart_as_map()
     for item in items_to_remove:
         del cart[item.id]
@@ -104,7 +104,7 @@ async def remove_from_cart(items_to_remove: list[_types.CartItemSchema]) -> list
 
 
 async def update_cart(
-    items: list[_types.CartItemSchema], reset: bool = False
+    items: list[types.CartItemSchema], reset: bool = False
 ) -> list[dict]:
     new_cart = {}
     if not reset:
