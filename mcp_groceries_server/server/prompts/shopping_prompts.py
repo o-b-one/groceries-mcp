@@ -34,7 +34,7 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             **Preferences:**
             {preferences or "None"}
 
-            ### Step 1: 
+            ### Step 1: Search for items and add to basket
             - Search each item in the list while considering the user preferences.
             - Collect the IDs as you will need them for the next step to update the basekt
             - Use the relevant tools to add and remove items to the basket based on the findings from previous step

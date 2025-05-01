@@ -4,7 +4,7 @@ import typing
 
 from httpx import AsyncClient
 
-from mcp_groceries_server.server import types 
+from mcp_groceries_server.server import types
 
 BASE_URL = "https://www.rami-levy.co.il/api"
 CATALOG_ENDPOINT = f"{BASE_URL}/catalog"

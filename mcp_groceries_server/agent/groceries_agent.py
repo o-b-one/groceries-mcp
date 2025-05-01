@@ -2,11 +2,11 @@ import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_ollama import ChatOllama
 from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from langchain_mcp_adapters.tools import load_mcp_tools
 
 from mcp_groceries_server.agent import variables
 
@@ -37,7 +37,7 @@ class GroceriesAgent:
                 "run",
                 "mcp-groceries-server",
                 "--vendor",
-                "keshet"
+                "keshet",
                 # "rami-levy",
             ],
             transport="stdio",
@@ -45,7 +45,7 @@ class GroceriesAgent:
                 VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY"),
                 VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID"),
                 CART_ID=os.environ.get("CART_ID"),
-            )
+            ),
         )
         async with stdio_client(server_params) as (read, write):
             async with ClientSession(read, write) as session:
@@ -68,4 +68,6 @@ class GroceriesAgent:
                 )
                 agent = create_react_agent(self._model, tools, debug=debug)
                 prompts = [msg.content.text for msg in prompts_result.messages]
-                return await agent.ainvoke({"messages": prompts}, {"recursion_limit": 15})
+                return await agent.ainvoke(
+                    {"messages": prompts}, {"recursion_limit": 50}
+                )

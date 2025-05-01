@@ -1,7 +1,6 @@
-import os
 import argparse
-import asyncio
 import enum
+import os
 
 from mcp_groceries_server.server.prompts import shopping_prompts
 
@@ -19,10 +18,16 @@ def main():
     args = parser.parse_args()
     vendor = args.vendor or os.environ.get("VENDOR")
     if vendor == Vendors.RamiLevy.value:
-        import mcp_groceries_server.server.providers.rami_levy
+        from mcp_groceries_server.server.providers.rami_levy.tools import (
+            RamiLevyProvider,
+        )
+
+        RamiLevyProvider()
     elif vendor == Vendors.Keshet.value:
-        import mcp_groceries_server.server.providers.keshet
+        from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider
+
+        KeshetProvider()
     else:
         raise ValueError(f"Unsupported vendor: {vendor}")
-    
+
     server.run(transport="stdio")
