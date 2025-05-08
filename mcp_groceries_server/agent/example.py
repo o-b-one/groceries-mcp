@@ -1,12 +1,12 @@
 import asyncio
 import logging
 import os
-
 from dotenv import load_dotenv
+load_dotenv()
 
 from mcp_groceries_server.agent.groceries_agent import GroceriesAgent
 
-load_dotenv()
+
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 
