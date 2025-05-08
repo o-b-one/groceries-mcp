@@ -44,6 +44,7 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             **Important:**
             - You must follow the list by adding only items found in the list and by the user preferences, nothing more
             - If the basket contains items not found in the list you should remove those items
+            - If item is not found try to find an alternative, add it to the basket with quantity 1
             ---
             ### Step 2: Conclusion
             
