@@ -13,7 +13,11 @@ logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 
 def main():
     grocery_list = open("./grocery.txt", "r").read()
-    coroutine = GroceriesAgent().invoke(shopping_list=grocery_list, debug=DEBUG)
+    if os.path.exists("./preferences.txt"):
+        preferences = open("./preferences.txt", "r").read()
+    else:
+        preferences = ""
+    coroutine = GroceriesAgent().invoke(shopping_list=grocery_list, preferences=preferences, debug=DEBUG)
     result = asyncio.run(coroutine)
     logging.info("Results:\n%s", result["messages"][-1].content)
 

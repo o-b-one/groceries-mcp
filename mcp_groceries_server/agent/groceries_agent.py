@@ -30,15 +30,15 @@ class GroceriesAgent:
     def __init__(self):
         self._model = create_llm_client(variables.MODEL_ID)
 
-    async def invoke(self, shopping_list: str, *, debug: bool = False) -> dict:
+    async def invoke(self, shopping_list: str, *, preferences: str = "", debug: bool = False) -> dict:
         server_params = StdioServerParameters(
             command="uv",
             args=[
                 "run",
                 "mcp-groceries-server",
                 "--vendor",
-                "keshet",
-                # "rami-levy",
+                # "keshet",
+                "rami-levy",
             ],
             transport="stdio",
             env=dict(
@@ -57,13 +57,7 @@ class GroceriesAgent:
                     "start_shopping",
                     arguments={
                         "shopping_list": shopping_list,
-                        "preferences": """
-                    - toilet parper search instead for:
-                        lily toilet paper
-                    - חלב search for חלב נטול לקטוז instead
-                    - Dish soap look for Fairy or פיירי לימון
-                    - Chicken Snitzel must not have corn
-                    """,
+                        "preferences": preferences,
                     },
                 )
                 agent = create_react_agent(self._model, tools, debug=debug)
