@@ -37,8 +37,7 @@ class GroceriesAgent:
                 "run",
                 "mcp-groceries-server",
                 "--vendor",
-                # "keshet",
-                "rami-levy",
+                os.environ["VENDOR"]
             ],
             transport="stdio",
             env=dict(
