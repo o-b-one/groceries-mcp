@@ -23,6 +23,7 @@ dependencies = [
     "pydantic",
     "httpx>=0.28.1",
     "argparse>=1.4.0",
+    "rich>=14.0.0",
 ]
 
 [tool.mypy]
@@ -45,4 +46,4 @@ mcp-groceries-server="mcp_groceries_server.server:main"
 
 [tool.ruff.lint]
 select = ["E", "F"]
-ignore = ["F401"]
+ignore = ["F401", "E501"]
