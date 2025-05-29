@@ -31,15 +31,12 @@ class GroceriesAgent:
         self._model = create_llm_client(variables.MODEL_ID)
         self.console = Console()
 
-    async def invoke(self, shopping_list: str, *, preferences: str = "", debug: bool = False) -> dict:
+    async def invoke(
+        self, shopping_list: str, *, preferences: str = "", debug: bool = False
+    ) -> dict:
         server_params = StdioServerParameters(
             command="uv",
-            args=[
-                "run",
-                "mcp-groceries-server",
-                "--vendor",
-                os.environ["MCP_VENDOR"]
-            ],
+            args=["run", "mcp-groceries-server", "--vendor", os.environ["MCP_VENDOR"]],
             transport="stdio",
             env=dict(
                 VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY"),

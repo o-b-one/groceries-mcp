@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from mcp_groceries_server.agent.groceries_agent import GroceriesAgent
@@ -17,7 +18,9 @@ def main():
         preferences = open("./preferences.txt", "r").read()
     else:
         preferences = ""
-    coroutine = GroceriesAgent().invoke(shopping_list=grocery_list, preferences=preferences, debug=DEBUG)
+    coroutine = GroceriesAgent().invoke(
+        shopping_list=grocery_list, preferences=preferences, debug=DEBUG
+    )
     result = asyncio.run(coroutine)
     logging.info("Results:\n%s", result["messages"][-1].content)
 
