@@ -1,6 +1,4 @@
-import datetime
 import os
-import sys
 import typing
 
 from httpx import AsyncClient
@@ -102,7 +100,7 @@ async def _trigger_update(items: dict[str, int]) -> typing.Coroutine[None, None,
 
 async def remove_from_cart(items_to_remove: list[types.CartItemSchema]) -> list[dict]:
     cart = await get_cart()
-    for item in items:
+    for item in items_to_remove:
         cart[item["id"]] = 0
     return await _trigger_update(cart)
 

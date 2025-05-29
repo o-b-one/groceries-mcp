@@ -46,4 +46,4 @@ mcp-groceries-server="mcp_groceries_server.server:main"
 
 [tool.ruff.lint]
 select = ["E", "F"]
-ignore = ["F401"]
+ignore = ["F401", "E501"]

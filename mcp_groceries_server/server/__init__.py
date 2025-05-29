@@ -18,13 +18,11 @@ def main():
     args = parser.parse_args()
     vendor = args.vendor or os.environ.get("VENDOR")
     if vendor == Vendors.RamiLevy.value:
-        from mcp_groceries_server.server.providers.rami_levy.tools import (
-            RamiLevyProvider,
-        )
+        from mcp_groceries_server.server.providers.rami_levy.tools import RamiLevyProvider  # pylint: disable=import-outside-toplevel
 
         RamiLevyProvider()
     elif vendor == Vendors.Keshet.value:
-        from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider
+        from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider  # pylint: disable=import-outside-toplevel
 
         KeshetProvider()
     else:

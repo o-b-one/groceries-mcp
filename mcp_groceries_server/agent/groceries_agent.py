@@ -20,10 +20,10 @@ def create_llm_client(model_id: str):
             timeout=None,
             max_retries=2,
         )
-    elif any([open_source in model_id for open_source in ["llama", "qwq", "deepseek"]]):
+    if any(open_source in model_id for open_source in ["llama", "qwq", "deepseek"]):
         return ChatOllama(model=model_id, temperature=0, top_k=40, top_p=0.95)
-    else:
-        raise ValueError(f"Invalid llm model {model_id}")
+
+    raise ValueError(f"Invalid llm model {model_id}")
 
 
 class GroceriesAgent:
