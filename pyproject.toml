@@ -23,6 +23,7 @@ dependencies = [
     "pydantic",
     "httpx>=0.28.1",
     "argparse>=1.4.0",
+    "rich>=14.0.0",
 ]
 
 [tool.mypy]
