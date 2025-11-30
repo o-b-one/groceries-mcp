@@ -7,6 +7,7 @@ from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from rich.console import Console
+from google.api_core.exceptions import ResourceExhausted
 
 from mcp_groceries_server.agent import variables
 
@@ -20,8 +21,8 @@ def create_llm_client(model_id: str):
             timeout=None,
             max_retries=2,
         )
-    if any(open_source in model_id for open_source in ["llama", "qwq", "deepseek"]):
-        return ChatOllama(model=model_id, temperature=0, top_k=40, top_p=0.95)
+    if any(open_source in model_id for open_source in ["llama", "qwq", "deepseek", "mistral"]):
+        return ChatOllama(model=model_id, temperature=0, top_k=40, top_p=0.95, format="json")
 
     raise ValueError(f"Invalid llm model {model_id}")
 
@@ -60,10 +61,12 @@ class GroceriesAgent:
                             "preferences": preferences,
                         },
                     )
-                    agent = create_react_agent(self._model, tools, debug=debug)
+                    agent = create_react_agent(self._model, tools, debug=True, version="v2")
                     prompts = [msg.content.text for msg in prompts_result.messages]
                     status.update(status="[bold green] Shopping for groceries...")
-                    result = await agent.ainvoke(
+                    result = await agent.with_retry(
+                        retry_if_exception_type=(ResourceExhausted,)
+                    ).ainvoke(
                         {"messages": prompts}, {"recursion_limit": 50}
                     )
                     status.update(status="[bold green] Shopping completed!")

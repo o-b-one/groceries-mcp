@@ -22,7 +22,7 @@ class Provider(abc.ABC):
                 fn=self.search,
                 uri="groceries://search/{item}",
                 name="search",
-                description="Lookup for item on the provider site",
+                description="Lookup for item on the provider site, search should be in hebrew",
                 mime_type="text/plain",
             )
         )
@@ -31,7 +31,7 @@ class Provider(abc.ABC):
         server.add_tool(
             self.search,
             name="search",
-            description="Lookup for item on the provider site",
+            description="Lookup for item on the provider site, search should be in hebrew",
         )
 
     @abc.abstractmethod
