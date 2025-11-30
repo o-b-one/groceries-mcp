@@ -34,16 +34,23 @@ class GroceriesAgent:
     async def invoke(
         self, shopping_list: str, *, preferences: str = "", debug: bool = False
     ) -> dict:
-        server_params = StdioServerParameters(
-            command="uv",
-            args=["run", "mcp-groceries-server", "--vendor", os.environ["MCP_VENDOR"]],
-            transport="stdio",
-            env=dict(
-                VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY"),
-                VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID"),
-                CART_ID=os.environ.get("CART_ID"),
-            ),
-        )
+        vendor = os.environ["MCP_VENDOR"]
+        match(vendor):
+            case "shufersal":
+                server_params = StdioServerParameters(
+                    command="node",
+                    args=["../shufersal-mcp/dist/index.js"],
+                )
+            case _:
+                server_params = StdioServerParameters(
+                    command="uv",
+                    args=["run", "mcp-groceries-server", "--vendor", vendor],
+                    env=dict(
+                        VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY", ""),
+                        VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID", ""),
+                        CART_ID=os.environ.get("CART_ID", ""),
+                    ),
+                )
 
         with self.console.status("[bold green] Start shopping") as status:
             async with stdio_client(server_params) as (read, write):
