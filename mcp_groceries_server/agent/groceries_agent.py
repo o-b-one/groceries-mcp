@@ -6,6 +6,7 @@ from langchain_ollama import ChatOllama
 from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import StreamableHTTPTransport, streamablehttp_client
 from rich.console import Console
 from google.api_core.exceptions import ResourceExhausted
 
@@ -35,31 +36,36 @@ class GroceriesAgent:
     async def invoke(
         self, shopping_list: str, *, preferences: str = "", debug: bool = False
     ) -> dict:
+        self.console.log("GroceriesAgent: Starting shopping session...")
         vendor = os.environ["MCP_VENDOR"]
-        match(vendor):
-            case "shufersal":
-                server_params = StdioServerParameters(
-                    command="node",
-                    args=["../shufersal-mcp/dist/index.js"],
-                )
-            case _:
-                server_params = StdioServerParameters(
-                    command="uv",
-                    args=["run", "mcp-groceries-server", "--vendor", vendor],
-                    env=dict(
-                        VENDOR_API_KEY=os.environ.get("VENDOR_API_KEY", ""),
-                        VENDOR_ACCOUNT_ID=os.environ.get("VENDOR_ACCOUNT_ID", ""),
-                        CART_ID=os.environ.get("CART_ID", ""),
-                    ),
-                )
+        shufersal_mcp_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "shufersal-mcp",
+                "dist",
+                "src",
+                "index.js",
+            )
+        )
+        shufersal_server_params = StdioServerParameters(
+            command="node",
+            args=[shufersal_mcp_path],
+        )
 
         with self.console.status("[bold green] Start shopping") as status:
-            async with stdio_client(server_params) as (read, write):
+            # async with stdio_client(main_server_params) as (read, write), stdio_client(shufersal_server_params) as (sread, swrite) :
+            #     async with ClientSession(read, write) as session, ClientSession(sread, swrite) as shufersal_session:
+            async with streamablehttp_client("http://localhost:8000/mcp") as (read, write, _):
                 async with ClientSession(read, write) as session:
+                    # sessions = [session, shufersal_session]
+                    # await asyncio.gather(*[session.initialize() for session in sessions])
                     await session.initialize()
 
                     # Get tools
-                    tools = await load_mcp_tools(session)
+                    # tools_session = shufersal_session if vendor == "shufersal" else session
+                    tools_session = session
+                    tools = await load_mcp_tools(tools_session)
 
                     prompts_result = await session.get_prompt(
                         "start_shopping",
@@ -74,7 +80,7 @@ class GroceriesAgent:
                     result = await agent.with_retry(
                         retry_if_exception_type=(ResourceExhausted,)
                     ).ainvoke(
-                        {"messages": prompts}, {"recursion_limit": 50}
+                        {"messages": prompts}, {"recursion_limit": 100}
                     )
                     status.update(status="[bold green] Shopping completed!")
                     return result
