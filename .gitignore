@@ -10,5 +10,4 @@ preferences.txt
 puppeteer-user-data/**/*
 .DS_Store
 .vscode/
-mcp_groceries_server/shufersal-mcp/
 groceries_mcp_data
