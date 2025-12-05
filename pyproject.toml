@@ -25,6 +25,7 @@ dependencies = [
     "argparse>=1.4.0",
     "rich>=14.0.0",
     "playwright",
+    "fastapi", # Added for the new FastAPI endpoint
 ]
 
 [tool.mypy]

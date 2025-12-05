@@ -15,23 +15,28 @@ class Vendors(enum.Enum):
 
 def main():
     parser = argparse.ArgumentParser(description="Groceries MCP Server")
-    parser.add_argument("--vendor", help="The vendor to work against")
+    parser.add_argument("--vendor", help="The vendor to work against", default="")
+    parser.add_argument("--transport", help="the mcp transport protocol", choices=["streamable-http", "stdio", "sse"], default="streamable-http")
+    
     args = parser.parse_args()
+    
     vendor = args.vendor or os.environ.get("VENDOR")
-    if vendor == Vendors.RamiLevy.value:
-        from mcp_groceries_server.server.providers.rami_levy.tools import RamiLevyProvider  # pylint: disable=import-outside-toplevel
-
-        RamiLevyProvider()
-    elif vendor == Vendors.Keshet.value:
-        from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider  # pylint: disable=import-outside-toplevel
-        KeshetProvider()
-    elif vendor == Vendors.Shufersal.value:
-        from mcp_groceries_server.server.providers.shufersal.tools import ShufersalProvider  # pylint: disable=import-outside-toplevel
-        ShufersalProvider()
-    else:
-        raise ValueError(f"Unsupported vendor: {vendor}")
-
-    server.run(transport="stdio")
+    transport = args.transport
+    match vendor:
+        case Vendors.RamiLevy.value:
+            from mcp_groceries_server.server.providers.rami_levy.tools import RamiLevyProvider  # pylint: disable=import-outside-toplevel
+            RamiLevyProvider()
+        case Vendors.Keshet.value:
+            from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider  # pylint: disable=import-outside-toplevel
+            KeshetProvider()
+        case Vendors.Shufersal.value:
+            from mcp_groceries_server.server.providers.shufersal.tools import ShufersalProvider  # pylint: disable=import-outside-toplevel
+            ShufersalProvider()
+        case _:
+            raise ValueError(f"Unsupported vendor: {vendor}")
+    
+    server.run(transport=transport)
+    # server.run(transport="stdio")
 
 
 
