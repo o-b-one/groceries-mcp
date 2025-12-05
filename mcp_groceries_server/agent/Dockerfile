@@ -34,4 +34,4 @@ EXPOSE  8000
 ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT ["uvicorn"]
-CMD [ "mcp_groceries_server.agent.api:app" ]
+CMD [ "mcp_groceries_server.agent.api:app" , "--host","0.0.0.0", "--port","8000"]

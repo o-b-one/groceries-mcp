@@ -10,4 +10,4 @@ async def lifespan(app: FastMCP):
     # Shutdown
     await close_browser()
 
-server = FastMCP("Groceries", lifespan=lifespan)
+server = FastMCP("Groceries", lifespan=lifespan, host="0.0.0.0")
