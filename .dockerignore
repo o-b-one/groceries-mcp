@@ -1,0 +1,13 @@
+.env
+build/
+__pycache__
+.venv
+*.egg-info
+.cursor
+.cursorrules
+grocery.txt
+preferences.txt
+puppeteer-user-data/**/*
+.DS_Store
+.vscode/
+groceries_mcp_data
