@@ -30,6 +30,7 @@ COPY --from=uv /root/.local /root/.local
 COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path
+EXPOSE  8000
 ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT ["uvicorn"]
