@@ -18,9 +18,13 @@ class ShufersalProvider(Provider):
     async def remove_items_from_cart(
         self, items: list[types.CartItemSchema]
     ) -> dict[str, list[dict]]:
-        for item in items:
-            item.quantity = "0"
-        result = await service.update_cart(items)
+        if not items:
+            result = await service.clear_cart()
+        else:
+            # Set quantity to "0" for each item to be removed via update_cart
+            for item in items:
+                item.quantity = "0"
+            result = await service.update_cart(items)
         return {
             "content": [{"type": "text", "text": json.dumps(result)}],
         }
@@ -30,6 +34,9 @@ class ShufersalProvider(Provider):
         result = await service.search(item)
         items = map(transform_product, result.get("results", []))
         return {"content": [{"type": "text", "text": list(items)}]}
+    
+    async def authorize(self) -> None:
+        await service.authorize()
 
 
 def transform_product(product: dict):

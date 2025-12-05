@@ -38,4 +38,4 @@ def main():
 if __name__ == "__main__":
     from mcp_groceries_server.server.providers.shufersal.tools import ShufersalProvider  # pylint: disable=import-outside-toplevel
     ShufersalProvider()
-    server.run(transport="sse")
+    server.run(transport="streamable-http")
