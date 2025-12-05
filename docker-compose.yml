@@ -1,4 +1,7 @@
 version: '3.8'
+volumes:
+  browser-data:
+
 
 services:
   # keshet_mcp:
@@ -23,6 +26,8 @@ services:
       - .env
     environment:
       - VENDOR=shufersal
+    volumes:
+      - browser-data:/var/lib/groceries_mcp_data/
 
   agent:
     build: 

@@ -72,7 +72,7 @@ async def launch_browser(headless: bool = True) -> Page:
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start() # Start Playwright instance
         _browser = await _playwright_instance.chromium.launch_persistent_context(
-            user_data_dir=os.environ.get("USER_DATA_PATH", "~/groceries_mcp_data/"),
+            user_data_dir=os.environ.get("USER_DATA_PATH", "/var/lib/groceries_mcp_data/"),
             headless=headless
         )
         _page = await _browser.new_page()
