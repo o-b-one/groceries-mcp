@@ -1,4 +1,5 @@
 
+import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_ollama import ChatOllama
@@ -10,6 +11,9 @@ from google.api_core.exceptions import ResourceExhausted
 
 from mcp_groceries_server.agent import variables
 
+
+
+MCP_ENDPOINT = os.environ.get("MCP_ENDPOINT", "http://localhost:8000/mcp")
 
 def create_llm_client(model_id: str):
     if "gemini" in model_id:
@@ -38,7 +42,7 @@ class GroceriesAgent:
         with self.console.status("[bold green] Start shopping") as status:
             # async with stdio_client(main_server_params) as (read, write), stdio_client(shufersal_server_params) as (sread, swrite) :
             #     async with ClientSession(read, write) as session, ClientSession(sread, swrite) as shufersal_session:
-            async with streamablehttp_client("http://localhost:8000/mcp") as (read, write, _):
+            async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
                 async with ClientSession(read, write) as session:
                     # sessions = [session, shufersal_session]
                     # await asyncio.gather(*[session.initialize() for session in sessions])
