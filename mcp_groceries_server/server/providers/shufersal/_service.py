@@ -81,6 +81,9 @@ async def launch_browser(headless: bool = True) -> Page:
 
 async def close_browser() -> None:
     global _browser, _page, _playwright_instance
+    if _page:
+        # Some pages sync localstorage on reload
+        await _page.reload()
     if _browser:
         await _browser.close()
         _browser = None
