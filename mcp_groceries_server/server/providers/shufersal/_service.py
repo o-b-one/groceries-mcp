@@ -63,7 +63,7 @@ async def _request(
         except Exception as e:
             print(f"ERR+++ {str(body)} >>>", method, url, type(e), e, file=sys.stderr)
             if response:
-                print(f"ERR RESP+++ >>>", response.text,file=sys.stderr)
+                print("ERR RESP+++ >>>", response.text,file=sys.stderr)
             raise
 
 

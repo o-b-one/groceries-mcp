@@ -37,22 +37,6 @@ class GroceriesAgent:
         self, shopping_list: str, *, preferences: str = "", debug: bool = False
     ) -> dict:
         self.console.log("GroceriesAgent: Starting shopping session...")
-        vendor = os.environ["MCP_VENDOR"]
-        shufersal_mcp_path = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "shufersal-mcp",
-                "dist",
-                "src",
-                "index.js",
-            )
-        )
-        shufersal_server_params = StdioServerParameters(
-            command="node",
-            args=[shufersal_mcp_path],
-        )
-
         with self.console.status("[bold green] Start shopping") as status:
             # async with stdio_client(main_server_params) as (read, write), stdio_client(shufersal_server_params) as (sread, swrite) :
             #     async with ClientSession(read, write) as session, ClientSession(sread, swrite) as shufersal_session:
