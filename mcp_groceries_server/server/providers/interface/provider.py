@@ -22,7 +22,7 @@ class Provider(abc.ABC):
                 fn=self.search,
                 uri="groceries://search/{item}",
                 name="search",
-                description="Lookup for item on the provider site",
+                description="Lookup for item on the provider site, search should be in hebrew",
                 mime_type="text/plain",
             )
         )
@@ -31,7 +31,13 @@ class Provider(abc.ABC):
         server.add_tool(
             self.search,
             name="search",
-            description="Lookup for item on the provider site",
+            description="Lookup for item on the provider site, search should be in hebrew",
+        )
+        
+        server.add_tool(
+            self.authorize,
+            name="user_authorization",
+            description="Allow the user to authorize - this should be done manually by the user",
         )
 
     @abc.abstractmethod
@@ -46,3 +52,6 @@ class Provider(abc.ABC):
 
     @abc.abstractmethod
     async def search(self, item: str) -> dict[str, list[dict]]: ...
+
+    async def authorize(self) -> None:
+        pass

@@ -4,12 +4,13 @@ import os
 
 from mcp_groceries_server.server.prompts import shopping_prompts
 
-from .mcp_server import server
+from mcp_groceries_server.server.mcp_server import server
 
 
 class Vendors(enum.Enum):
     RamiLevy = "rami-levy"
     Keshet = "keshet"
+    Shufersal = "shufersal"
 
 
 def main():
@@ -23,9 +24,18 @@ def main():
         RamiLevyProvider()
     elif vendor == Vendors.Keshet.value:
         from mcp_groceries_server.server.providers.keshet.tools import KeshetProvider  # pylint: disable=import-outside-toplevel
-
         KeshetProvider()
+    elif vendor == Vendors.Shufersal.value:
+        from mcp_groceries_server.server.providers.shufersal.tools import ShufersalProvider  # pylint: disable=import-outside-toplevel
+        ShufersalProvider()
     else:
         raise ValueError(f"Unsupported vendor: {vendor}")
 
     server.run(transport="stdio")
+
+
+
+if __name__ == "__main__":
+    from mcp_groceries_server.server.providers.shufersal.tools import ShufersalProvider  # pylint: disable=import-outside-toplevel
+    ShufersalProvider()
+    server.run(transport="streamable-http")
