@@ -8,6 +8,6 @@ async def lifespan(app: FastMCP):
     # Startup
     yield
     # Shutdown
-    await close_browser()
+    # await close_browser()
 
 server = FastMCP("Groceries", lifespan=lifespan, host="0.0.0.0")
