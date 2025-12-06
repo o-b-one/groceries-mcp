@@ -67,7 +67,7 @@ async def _request(
             raise
 
 
-async def launch_browser(headless: bool = True) -> Page:
+async def launch_browser(headless: bool = False) -> Page:
     global _browser, _page, _playwright_instance
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start() # Start Playwright instance
@@ -193,8 +193,8 @@ async def update_cart(
                     comment: "",
                     affiliateCode: ""
                 }), () => { }, null, {
-                    openFrom: "",
-                    recommendationType: "REGULAR"
+                    openFrom: "SEARCH",
+                    recommendationType: "AUTOCOMPLETE_LIST"
                 });
                 console.log('update_cart ajaxCall response:', response);
                 return response;
@@ -205,8 +205,11 @@ async def update_cart(
             "sellingMethod": selling_method,
             "qty": int(item.quantity),
         }
-        result = await _execute_browser_script(page, script, args)
-        results.append(typing.cast(typing.Dict[str, typing.Any], result)) # Cast each result to dict
+        try:
+            result = await _execute_browser_script(page, script, args)
+            results.append(f"{item.quantity} of {item.id} added")
+        except:
+            results.append(f"{item.quantity} of {item.id} failed to add")
     return results
 
 
