@@ -67,7 +67,7 @@ async def _request(
             raise
 
 
-async def launch_browser(headless: bool = False) -> Page:
+async def launch_browser(headless: bool = True) -> Page:
     global _browser, _page, _playwright_instance
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start() # Start Playwright instance
@@ -206,7 +206,7 @@ async def update_cart(
             "qty": int(item.quantity),
         }
         try:
-            result = await _execute_browser_script(page, script, args)
+            await _execute_browser_script(page, script, args)
             results.append(f"{item.quantity} of {item.id} added")
         except:
             results.append(f"{item.quantity} of {item.id} failed to add")
