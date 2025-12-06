@@ -175,7 +175,7 @@ async def clear_cart() -> typing.Dict[str, typing.Any]:
 async def update_cart(
     items: list[types.CartItemSchema], reset: bool = False
 ) -> list[typing.Dict[str, typing.Any]]:
-    page = await launch_browser(headless=False)
+    page = await launch_browser()
     results = []
     for item in items:
         selling_method = item.selling_method
