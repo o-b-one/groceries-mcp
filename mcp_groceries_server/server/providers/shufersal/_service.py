@@ -141,18 +141,6 @@ async def search(item: str) -> typing.Dict[str, typing.Any]:
         method="GET"
     )
 
-# async def get_cart() -> list[dict]:
-#     response = await _request(url=CART_QUERY_ENDPOINT, method="GET")
-#     cart = response.get("cart", {}) or {}
-#     cart_items = cart.get("items", {}) or {}
-#     return [
-#         types.CartItemSchema(id=str(_id), quantity=str(quantity)).model_dump()
-#         for _id, quantity in cart_items.items()
-#     ]
-
-
-# Removed _get_cart_as_map and _trigger_update as they are not used and the logic will be handled by Playwright.
-
 async def clear_cart() -> typing.Dict[str, typing.Any]:
     page = await launch_browser()
     script = """

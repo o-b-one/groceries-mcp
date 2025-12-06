@@ -1,3 +1,3 @@
 import os
 
-MODEL_ID = os.environ.get("MODEL_ID", "gemini-2.0-flash-001")
+MODEL_ID = os.environ.get("MODEL_ID", "gemini-2.5-flash")
