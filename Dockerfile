@@ -31,9 +31,6 @@ COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y
-
 # Install Playwright
 RUN pip install playwright
 
