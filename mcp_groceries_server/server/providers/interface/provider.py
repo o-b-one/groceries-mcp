@@ -1,6 +1,5 @@
 import abc
 
-from mcp.server.fastmcp.resources import FunctionResource
 
 from mcp_groceries_server.server import server, types
 
@@ -17,17 +16,16 @@ class Provider(abc.ABC):
             name="remove_items_from_cart",
             description="Remove groceries from basket. Result is updated cart",
         )
-        server.add_resource(
-            FunctionResource(
-                fn=self.search,
-                uri="groceries://search/{item}",
-                name="search",
-                description="Lookup for item on the provider site, search should be in hebrew",
-                mime_type="text/plain",
-            )
-        )
+        # server.add_resource(
+        #     FunctionResource(
+        #         fn=self.get_cart,
+        #         uri="groceries://cart/{item}",
+        #         name="search",
+        #         description="get cart items",
+        #         mime_type="text/plain",
+        #     )
+        # )
 
-        # Setting as tool as a workaround as langchain mcp adapter doesn't support resources yet
         server.add_tool(
             self.search,
             name="search",

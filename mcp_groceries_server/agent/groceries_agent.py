@@ -1,8 +1,9 @@
 
+import asyncio
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_mcp_adapters.tools import load_mcp_tools
-from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
@@ -14,9 +15,10 @@ from mcp_groceries_server.agent import variables
 
 
 MCP_ENDPOINT = os.environ.get("MCP_ENDPOINT", "http://localhost:8000/mcp")
+INFERENCE_ENDPOINT = os.environ.get("INFERENCE_ENDPOINT", "http://localhost:1234/v1")
 
 def create_llm_client(model_id: str):
-    if "gemini" in model_id:
+    if "gemini" in model_id or "gemma" in model_id:
         return ChatGoogleGenerativeAI(
             model=model_id,
             temperature=0,
@@ -24,15 +26,22 @@ def create_llm_client(model_id: str):
             timeout=None,
             max_retries=2,
         )
-    if any(open_source in model_id for open_source in ["llama", "qwq", "deepseek", "mistral"]):
-        return ChatOllama(model=model_id, temperature=0, top_k=40, top_p=0.95, format="json")
+    if any(open_source in model_id for open_source in ["llama","qwen", "qwq", "deepseek", "mistral", "gpt-oss"]):
+        return ChatOpenAI(
+            model=model_id, 
+            base_url=INFERENCE_ENDPOINT,
+            api_key="noop",
+            temperature=0, 
+            top_p=0.95,
+            # streaming=True
+        )
 
     raise ValueError(f"Invalid llm model {model_id}")
 
 
 class GroceriesAgent:
     def __init__(self):
-        self._model = create_llm_client(variables.MODEL_ID)
+        self._model = create_llm_client(variables.MODEL_ID) 
         self.console = Console()
 
     async def invoke(
@@ -52,6 +61,12 @@ class GroceriesAgent:
                     # tools_session = shufersal_session if vendor == "shufersal" else session
                     tools_session = session
                     tools = await load_mcp_tools(tools_session)
+                    try:
+                        async with asyncio.timeout(15):
+                            print("going to try to login")
+                            await session.call_tool("user_authorization")
+                    except:
+                        pass
 
                     prompts_result = await session.get_prompt(
                         "start_shopping",
@@ -60,8 +75,8 @@ class GroceriesAgent:
                             "preferences": preferences,
                         },
                     )
-                    agent = create_react_agent(self._model, tools, debug=True, version="v2")
                     prompts = [msg.content.text for msg in prompts_result.messages]
+                    agent = create_react_agent(self._model, tools) 
                     status.update(status="[bold green] Shopping for groceries...")
                     result = await agent.with_retry(
                         retry_if_exception_type=(ResourceExhausted,)

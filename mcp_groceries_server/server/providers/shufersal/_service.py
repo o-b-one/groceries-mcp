@@ -1,19 +1,25 @@
+import asyncio
 import os
 import typing
 import sys
 from typing import Optional, Any
 
-from playwright.async_api import async_playwright, Browser, Page
+from playwright.async_api import Playwright, BrowserContext, async_playwright, Page
 from httpx import AsyncClient
 from mcp_groceries_server.server import types
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_URL = "https://www.shufersal.co.il/online/he"
+AUTH_URL = "https://www.shufersal.co.il/online/he/login"
 CATALOG_ENDPOINT = f"{BASE_URL}/search/results?limit=10"
 CART_ENDPOINT = f"{BASE_URL}/cart"
+STORAGE_STATE = "auth_state.json"
 
-_browser: Optional[Browser] = None
+_browser: Optional[BrowserContext] = None
 _page: Optional[Page] = None
-_playwright_instance: Optional[Any] = None # Added for global playwright instance management
+_playwright_instance: Optional[Playwright] = None # Added for global playwright instance management
 
 # Default headers for Playwright requests to mimic a real browser
 PLAYWRIGHT_HEADERS = {
@@ -72,6 +78,11 @@ async def launch_browser(headless: bool = True) -> Page:
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start() # Start Playwright instance
         _browser = await _playwright_instance.chromium.launch_persistent_context(
+            slow_mo=500,
+            java_script_enabled=True,
+            ignore_https_errors=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
+            args=["--no-sandbox", "--disable-gpu"],
             user_data_dir=os.environ.get("USER_DATA_PATH", "/var/lib/groceries_mcp_data/"),
             headless=headless
         )
@@ -180,7 +191,10 @@ async def update_cart(
                     frontQuantity: args.qty,
                     comment: "",
                     affiliateCode: ""
-                }), () => { }, null, {
+                }), (rsltScript) => {   
+                    miglog.cart.cartRefresh(rsltScript);
+                    miglog.eventEmitter.emit("cart:addtocartcallback");
+                }, null, {
                     openFrom: "SEARCH",
                     recommendationType: "AUTOCOMPLETE_LIST"
                 });
@@ -188,6 +202,7 @@ async def update_cart(
                 return response;
             }
         """
+
         args = {
             "product_id": str(item.id),
             "sellingMethod": selling_method,
@@ -195,11 +210,36 @@ async def update_cart(
         }
         try:
             await _execute_browser_script(page, script, args)
+            await _page.reload()
             results.append(f"{item.quantity} of {item.id} added")
-        except:
+        except Exception as e:
+            print(e)
             results.append(f"{item.quantity} of {item.id} failed to add")
     return results
 
 
 async def authorize():
-    await launch_browser(headless=False)
+    try:
+        page = await launch_browser(headless=True)
+        await page.goto(AUTH_URL)
+        await asyncio.sleep(5) # Another buffer
+        if page.url != AUTH_URL:
+            return
+        if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):
+            await page.fill("#j_username", username)
+            await page.fill("#j_password", password)
+            login_btn = await page.query_selector(".btn-login")
+            await login_btn.click()
+
+        urls = [
+            "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
+            BASE_URL,
+            BASE_URL+"/A"
+        ]
+        await asyncio.wait([
+            asyncio.create_task(page.wait_for_url(url))
+            for url in urls
+        ], return_when=asyncio.FIRST_COMPLETED)
+        await page.context.storage_state(path=STORAGE_STATE)
+    finally:
+        await close_browser()

@@ -50,9 +50,20 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             
             Return the user the following details:
             
+            #### Added Items
+            
             - Items added to the cart
+            
+            #### Alternatives
+            
             - Alternative for items that couldn't be found
+            #### Missing Items
+
             - Items could not be found and not alternative found
+            
+            
+            #### Discounts and Deals 
+            - <item_name>: <description of the available deals/discounts>
 
             ---
 

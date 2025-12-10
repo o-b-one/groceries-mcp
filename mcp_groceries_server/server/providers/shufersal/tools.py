@@ -45,5 +45,8 @@ def transform_product(product: dict):
         name=product.get("baseProductDescription"),
         price=product.get("price", {}).get("value"),
         quantity_evaluation=product.get("pricePerUnit", {}),
-        selling_method=product.get("sellingMethod")
+        selling_method=product.get("sellingMethod"),
+        discounts=product.get("promotionMsg"),
+        branding_name=product.get("brandName"),
+        second_level_category=product.get("secondLevelCategory"),
     )
