@@ -27,6 +27,23 @@ services:
     volumes:
       - /var/lib/groceries_mcp_data:/var/lib/groceries_mcp_data/
 
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.57.0-noble
+    # Use the Playwright user for security, which is part of the official image.
+    user: playwright
+    # Set entrypoint to a command that keeps the container running indefinitely
+    # so other services can interact with it if they are using a remote setup
+    # (though typically Playwright is run *inside* the client container).
+    # If your other services run Playwright locally, you might omit this
+    # or use it to just ensure the container is ready.
+    command: ["sleep", "infinity"] 
+    ports:
+      - "5900:5900"
+    environment:
+      - DISPLAY=:99
+    volumes:
+      - /dev/shm:/dev/shm
+
   agent:
     build: 
       context: .

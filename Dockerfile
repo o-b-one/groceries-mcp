@@ -29,14 +29,6 @@ WORKDIR /app
 COPY --from=uv /root/.local /root/.local
 COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
-
-# Install Playwright
-RUN pip install playwright
-
-# Install Playwright browsers and dependencies
-RUN playwright install --with-deps chromium  --only-shell
-
 EXPOSE  8000
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
