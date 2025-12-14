@@ -35,7 +35,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
 RUN pip install playwright
 
 # Install Playwright browsers and dependencies
-RUN playwright install --with-deps chromium
+RUN playwright install --with-deps chromium  --only-shell
 
 EXPOSE  8000
 # Place executables in the environment at the front of the path

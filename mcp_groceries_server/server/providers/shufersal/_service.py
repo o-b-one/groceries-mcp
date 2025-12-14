@@ -76,11 +76,14 @@ async def _request(
 async def launch_browser(headless: bool = True) -> Page:
     global _browser, _page, _playwright_instance
     if not _browser or not _page:
+        if executable_path := os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
+            executable_path = os.path.join(executable_path, "chromium_headless_shell-1200", "chrome-linux", "headless_shell")
         _playwright_instance = await async_playwright().start() # Start Playwright instance
         _browser = await _playwright_instance.chromium.launch_persistent_context(
             slow_mo=500,
             java_script_enabled=True,
             ignore_https_errors=True,
+            executable_path=executable_path,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
             args=["--no-sandbox", "--disable-gpu"],
             user_data_dir=os.environ.get("USER_DATA_PATH", "/var/lib/groceries_mcp_data/"),
