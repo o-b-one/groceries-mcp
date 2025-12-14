@@ -28,7 +28,7 @@ services:
     volumes:
       - /var/lib/groceries_mcp_data:/var/lib/groceries_mcp_data/
     depends_on:
-      - playwright
+      - playwright-server
 
   playwright-server:
     image: mcr.microsoft.com/playwright:v1.57.0-noble
