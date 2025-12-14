@@ -4,7 +4,7 @@ import typing
 import sys
 from typing import Optional, Any
 
-from playwright.async_api import Playwright, BrowserContext, async_playwright, Page
+from playwright.async_api import Playwright, Browser, async_playwright, Page
 from httpx import AsyncClient
 from mcp_groceries_server.server import types
 from dotenv import load_dotenv
@@ -17,7 +17,7 @@ CATALOG_ENDPOINT = f"{BASE_URL}/search/results?limit=10"
 CART_ENDPOINT = f"{BASE_URL}/cart"
 STORAGE_STATE = "auth_state.json"
 
-_browser: Optional[BrowserContext] = None
+_browser: Optional[Browser] = None
 _page: Optional[Page] = None
 _playwright_instance: Optional[Playwright] = None # Added for global playwright instance management
 
@@ -79,15 +79,9 @@ async def launch_browser(headless: bool = True) -> Page:
         if executable_path := os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
             executable_path = os.path.join(executable_path, "chromium_headless_shell-1200", "chrome-linux", "headless_shell")
         _playwright_instance = await async_playwright().start() # Start Playwright instance
-        _browser = await _playwright_instance.chromium.launch_persistent_context(
+        _browser = await _playwright_instance.chromium.connect(
+            os.environ.get("PLAYWRIGHT_WS_URL", "ws://127.0.0.1:3000/"),
             slow_mo=500,
-            java_script_enabled=True,
-            ignore_https_errors=True,
-            executable_path=executable_path,
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
-            args=["--no-sandbox", "--disable-gpu"],
-            user_data_dir=os.environ.get("USER_DATA_PATH", "/var/lib/groceries_mcp_data/"),
-            headless=headless
         )
         _page = await _browser.new_page()
         await _page.goto(BASE_URL)

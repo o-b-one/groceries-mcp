@@ -23,26 +23,22 @@ services:
     env_file:
       - .env
     environment:
-      - VENDOR=shufersal
+      VENDOR: shufersal
+      PLAYWRIGHT_WS_URL: ws://playwright-server:3000
     volumes:
       - /var/lib/groceries_mcp_data:/var/lib/groceries_mcp_data/
+    depends_on:
+      - playwright
 
-  playwright:
+  playwright-server:
     image: mcr.microsoft.com/playwright:v1.57.0-noble
-    # Use the Playwright user for security, which is part of the official image.
-    user: playwright
-    # Set entrypoint to a command that keeps the container running indefinitely
-    # so other services can interact with it if they are using a remote setup
-    # (though typically Playwright is run *inside* the client container).
-    # If your other services run Playwright locally, you might omit this
-    # or use it to just ensure the container is ready.
-    command: ["sleep", "infinity"] 
+    command: npx playwright run-server --port 3000 --host 0.0.0.0
     ports:
-      - "5900:5900"
+      - '3000:3000'
     environment:
-      - DISPLAY=:99
-    volumes:
-      - /dev/shm:/dev/shm
+      # Optional: Set environment variables for screen size, etc.
+      SCREEN_WIDTH: 1920
+      SCREEN_HEIGHT: 1080
 
   agent:
     build: 
