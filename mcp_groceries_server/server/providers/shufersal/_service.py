@@ -73,14 +73,14 @@ async def _request(
             raise
 
 
-async def launch_browser(headless: bool = True) -> Page:
+async def launch_browser() -> Page:
     global _browser, _page, _playwright_instance
     if not _browser or not _page:
         if executable_path := os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
             executable_path = os.path.join(executable_path, "chromium_headless_shell-1200", "chrome-linux", "headless_shell")
         _playwright_instance = await async_playwright().start() # Start Playwright instance
         _browser = await _playwright_instance.chromium.connect(
-            os.environ.get("PLAYWRIGHT_WS_URL", "ws://127.0.0.1:3000/"),
+            os.environ.get("PLAYWRIGHT_WS_URL", "ws://127.0.0.1:3031/"),
             slow_mo=500,
         )
         _page = await _browser.new_page()
@@ -216,27 +216,27 @@ async def update_cart(
 
 
 async def authorize():
-    try:
-        page = await launch_browser(headless=True)
-        await page.goto(AUTH_URL)
-        await asyncio.sleep(5) # Another buffer
-        if page.url != AUTH_URL:
-            return
-        if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):
-            await page.fill("#j_username", username)
-            await page.fill("#j_password", password)
-            login_btn = await page.query_selector(".btn-login")
-            await login_btn.click()
+    # try:
+    page = await launch_browser()
+    await page.goto(AUTH_URL)
+    await asyncio.sleep(5) # Another buffer
+    if page.url != AUTH_URL:
+        return
+    if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):
+        await page.fill("#j_username", username)
+        await page.fill("#j_password", password)
+        login_btn = await page.query_selector(".btn-login")
+        await login_btn.click()
 
-        urls = [
-            "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
-            BASE_URL,
-            BASE_URL+"/A"
-        ]
-        await asyncio.wait([
-            asyncio.create_task(page.wait_for_url(url))
-            for url in urls
-        ], return_when=asyncio.FIRST_COMPLETED)
-        await page.context.storage_state(path=STORAGE_STATE)
-    finally:
-        await close_browser()
+    urls = [
+        "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
+        BASE_URL,
+        BASE_URL+"/A"
+    ]
+    await asyncio.wait([
+        asyncio.create_task(page.wait_for_url(url))
+        for url in urls
+    ], return_when=asyncio.FIRST_COMPLETED)
+    #     await page.context.storage_state(path=STORAGE_STATE)
+    # finally:
+    #     await close_browser()

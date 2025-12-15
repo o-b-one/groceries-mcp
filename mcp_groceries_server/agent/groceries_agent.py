@@ -9,9 +9,10 @@ from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 from rich.console import Console
 from google.api_core.exceptions import ResourceExhausted
-
+from logging import getLogger
 from mcp_groceries_server.agent import variables
 
+logger = getLogger()
 
 
 MCP_ENDPOINT = os.environ.get("MCP_ENDPOINT", "http://localhost:8000/mcp")
@@ -63,10 +64,10 @@ class GroceriesAgent:
                     tools = await load_mcp_tools(tools_session)
                     try:
                         async with asyncio.timeout(15):
-                            print("going to try to login")
+                            logger.info("going to try to login")
                             await session.call_tool("user_authorization")
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Authorization failed with an error: {e}")
 
                     prompts_result = await session.get_prompt(
                         "start_shopping",
