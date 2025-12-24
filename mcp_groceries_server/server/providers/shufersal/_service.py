@@ -276,7 +276,7 @@ async def authorize():
         try:
             await page.wait_for_selector("#j_username", timeout=10000)
         except Exception:
-            print("Login form not found, might already be logged in or blocked.", file=sys.stderr)
+            print(f"Login form not found, might already be logged in or blocked. {page.url}", file=sys.stderr)
             await take_screenshot(page, "login_form_not_found")
             if page.url == AUTH_URL:
                 raise
@@ -322,12 +322,10 @@ async def authorize():
         except Exception as e:
             print(f"Error during login redirection: {e}", file=sys.stderr)
             await take_screenshot(page, "login_error")
-            raise
 
     except Exception as e:
         print(f"Authorization failed: {e}", file=sys.stderr)
         await take_screenshot(page, "auth_failed_exception")
-        raise
     #     await page.context.storage_state(path=STORAGE_STATE)
     # finally:
     #     await close_browser()
