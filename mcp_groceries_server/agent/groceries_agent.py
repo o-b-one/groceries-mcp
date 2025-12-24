@@ -52,7 +52,7 @@ class GroceriesAgent:
         with self.console.status("[bold green] Start shopping") as status:
             # async with stdio_client(main_server_params) as (read, write), stdio_client(shufersal_server_params) as (sread, swrite) :
             #     async with ClientSession(read, write) as session, ClientSession(sread, swrite) as shufersal_session:
-            async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
+            async with streamablehttp_client(MCP_ENDPOINT, timeout=60 * 3) as (read, write, _):
                 async with ClientSession(read, write) as session:
                     # sessions = [session, shufersal_session]
                     # await asyncio.gather(*[session.initialize() for session in sessions])
