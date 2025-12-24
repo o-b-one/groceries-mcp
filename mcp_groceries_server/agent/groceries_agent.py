@@ -63,7 +63,7 @@ class GroceriesAgent:
                     tools_session = session
                     tools = await load_mcp_tools(tools_session)
                     try:
-                        async with asyncio.timeout(15):
+                        async with asyncio.timeout(60):
                             logger.info("going to try to login")
                             await session.call_tool("user_authorization")
                     except Exception as e:
