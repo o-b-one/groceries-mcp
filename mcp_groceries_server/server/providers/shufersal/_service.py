@@ -298,8 +298,8 @@ async def authorize():
                 # await take_screenshot(page, "login_button_missing")
 
         urls = [
-            "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
-            BASE_URL,
+            # "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
+            # BASE_URL,
             BASE_URL + "/A"
         ]
 
@@ -310,7 +310,7 @@ async def authorize():
         ]
         
         try:
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED, timeout=35)
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in pending:
                 task.cancel()
             
