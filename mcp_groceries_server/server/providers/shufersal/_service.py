@@ -270,14 +270,14 @@ async def authorize():
     page = await launch_browser()
     try:
         print(f"Navigating to {AUTH_URL}", file=sys.stderr)
-        await page.goto(AUTH_URL, wait_until="networkidle")
+        await page.goto(AUTH_URL, wait_until="load")
         
         # Wait for login form to be visible instead of fixed sleep
         try:
             await page.wait_for_selector("#j_username", timeout=10000)
         except Exception:
             print(f"Login form not found, might already be logged in or blocked. {page.url}", file=sys.stderr)
-            await take_screenshot(page, "login_form_not_found")
+            # await take_screenshot(page, "login_form_not_found")
             if page.url == AUTH_URL:
                 raise
             else:
@@ -295,7 +295,7 @@ async def authorize():
                 print("Login button clicked", file=sys.stderr)
             else:
                 print("Login button not found", file=sys.stderr)
-                await take_screenshot(page, "login_button_missing")
+                # await take_screenshot(page, "login_button_missing")
 
         urls = [
             "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
@@ -316,16 +316,16 @@ async def authorize():
             
             if not done:
                 print("Timed out waiting for login redirection", file=sys.stderr)
-                await take_screenshot(page, "login_timeout")
+                # await take_screenshot(page, "login_timeout")
             else:
                 print(f"Logged in successfully, current URL: {page.url}", file=sys.stderr)
         except Exception as e:
             print(f"Error during login redirection: {e}", file=sys.stderr)
-            await take_screenshot(page, "login_error")
+            # await take_screenshot(page, "login_error")
 
     except Exception as e:
         print(f"Authorization failed: {e}", file=sys.stderr)
-        await take_screenshot(page, "auth_failed_exception")
+        # await take_screenshot(page, "auth_failed_exception")
     #     await page.context.storage_state(path=STORAGE_STATE)
     # finally:
     #     await close_browser()
