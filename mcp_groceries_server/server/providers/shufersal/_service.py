@@ -19,6 +19,7 @@ STORAGE_STATE = "auth_state.json"
 
 _browser: Optional[Browser] = None
 _page: Optional[Page] = None
+_context: Optional[Any] = None
 _playwright_instance: Optional[Playwright] = None # Added for global playwright instance management
 
 # Default headers for Playwright requests to mimic a real browser
@@ -35,6 +36,41 @@ PLAYWRIGHT_HEADERS = {
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
     }
+
+STEALTH_JS = """
+(() => {
+    // Overwrite the `navigator.webdriver` property
+    Object.defineProperty(navigator, 'webdriver', {
+        get: () => false,
+    });
+
+    // Mock languages
+    Object.defineProperty(navigator, 'languages', {
+        get: () => ['he-IL', 'he', 'en-US', 'en'],
+    });
+
+    // Mock plugins
+    Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+    });
+
+    // Mock chrome property
+    window.chrome = {
+        runtime: {},
+        loadTimes: function() {},
+        csi: function() {},
+        app: {}
+    };
+
+    // Mock permissions
+    const originalQuery = window.navigator.permissions.query;
+    window.navigator.permissions.query = (parameters) => (
+        parameters.name === 'notifications' ?
+            Promise.resolve({ state: Notification.permission }) :
+            originalQuery(parameters)
+    );
+})();
+"""
 
 
 class ShufersalError(Exception):
@@ -73,31 +109,46 @@ async def _request(
             raise
 
 
+async def take_screenshot(page: Page, name: str):
+    """Takes a screenshot for debugging purposes."""
+    screenshot_dir = "/var/lib/groceries_mcp_data/screenshots"
+    os.makedirs(screenshot_dir, exist_ok=True)
+    path = os.path.join(screenshot_dir, f"{name}.png")
+    await page.screenshot(path=path)
+    print(f"Screenshot saved to: {path}", file=sys.stderr)
+
 async def launch_browser() -> Page:
-    global _browser, _page, _playwright_instance
+    global _browser, _page, _context, _playwright_instance
     if not _browser or not _page:
-        if executable_path := os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
-            executable_path = os.path.join(executable_path, "chromium_headless_shell-1200", "chrome-linux", "headless_shell")
-        _playwright_instance = await async_playwright().start() # Start Playwright instance
+        _playwright_instance = await async_playwright().start()
         _browser = await _playwright_instance.chromium.connect(
             os.environ.get("PLAYWRIGHT_WS_URL", "ws://127.0.0.1:3031/"),
             slow_mo=500,
         )
-        _page = await _browser.new_page()
+        _context = await _browser.new_context(
+            user_agent=PLAYWRIGHT_HEADERS["User-Agent"],
+            viewport={'width': 1920, 'height': 1080},
+            extra_http_headers={"Accept-Language": PLAYWRIGHT_HEADERS["accept-language"]}
+        )
+        # Apply stealth script to all pages in this context
+        await _context.add_init_script(STEALTH_JS)
+        _page = await _context.new_page()
         await _page.goto(BASE_URL)
     return _page
 
 async def close_browser() -> None:
-    global _browser, _page, _playwright_instance
+    global _browser, _page, _context, _playwright_instance
     if _page:
-        # Some pages sync localstorage on reload
         await _page.reload()
+    if _context:
+        await _context.close()
+        _context = None
     if _browser:
         await _browser.close()
         _browser = None
         _page = None
     if _playwright_instance:
-        await _playwright_instance.stop() # Stop Playwright instance
+        await _playwright_instance.stop()
         _playwright_instance = None
 
 async def _execute_browser_script(page: Page, script: str, args: Optional[typing.Dict[str, typing.Any]] = None) -> Any:
@@ -216,33 +267,67 @@ async def update_cart(
 
 
 async def authorize():
-    # try:
     page = await launch_browser()
-    await page.goto(AUTH_URL)
-    await asyncio.sleep(5) # Another buffer
-    if page.url != AUTH_URL:
-        return
-    if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):
-        await page.fill("#j_username", username)
-        await page.fill("#j_password", password)
-        login_btn = await page.query_selector(".btn-login")
-        await login_btn.click()
+    try:
+        print(f"Navigating to {AUTH_URL}", file=sys.stderr)
+        await page.goto(AUTH_URL, wait_until="networkidle")
+        
+        # Wait for login form to be visible instead of fixed sleep
+        try:
+            await page.wait_for_selector("#j_username", timeout=10000)
+        except Exception:
+            print("Login form not found, might already be logged in or blocked.", file=sys.stderr)
+            await take_screenshot(page, "login_form_not_found")
+            if page.url == AUTH_URL:
+                raise
+            else:
+                # If we are not on AUTH_URL, we might be logged in
+                return
 
-    urls = [
-        "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
-        BASE_URL,
-        BASE_URL+"/A"
-    ]
+        if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):
+            print("Filling login credentials", file=sys.stderr)
+            await page.fill("#j_username", username)
+            await page.fill("#j_password", password)
+            
+            login_btn = await page.query_selector(".btn-login")
+            if login_btn:
+                await login_btn.click()
+                print("Login button clicked", file=sys.stderr)
+            else:
+                print("Login button not found", file=sys.stderr)
+                await take_screenshot(page, "login_button_missing")
 
+        urls = [
+            "https://www.shufersal.co.il/online/he/my-account/personal-area/club",
+            BASE_URL,
+            BASE_URL + "/A"
+        ]
 
-    tasks = [
-        asyncio.create_task(page.wait_for_url(url))
-        for url in urls
-    ]
-    await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-    for task in tasks:
-        if not task.done():
-            task.cancel()
+        print("Waiting for redirection after login...", file=sys.stderr)
+        tasks = [
+            asyncio.create_task(page.wait_for_url(url, timeout=30000))
+            for url in urls
+        ]
+        
+        try:
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED, timeout=35)
+            for task in pending:
+                task.cancel()
+            
+            if not done:
+                print("Timed out waiting for login redirection", file=sys.stderr)
+                await take_screenshot(page, "login_timeout")
+            else:
+                print(f"Logged in successfully, current URL: {page.url}", file=sys.stderr)
+        except Exception as e:
+            print(f"Error during login redirection: {e}", file=sys.stderr)
+            await take_screenshot(page, "login_error")
+            raise
+
+    except Exception as e:
+        print(f"Authorization failed: {e}", file=sys.stderr)
+        await take_screenshot(page, "auth_failed_exception")
+        raise
     #     await page.context.storage_state(path=STORAGE_STATE)
     # finally:
     #     await close_browser()
