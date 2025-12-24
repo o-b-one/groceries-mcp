@@ -233,10 +233,16 @@ async def authorize():
         BASE_URL,
         BASE_URL+"/A"
     ]
-    await asyncio.wait([
+
+
+    tasks = [
         asyncio.create_task(page.wait_for_url(url))
         for url in urls
-    ], return_when=asyncio.FIRST_COMPLETED)
+    ]
+    await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    for task in tasks:
+        if not task.done():
+            task.cancel()
     #     await page.context.storage_state(path=STORAGE_STATE)
     # finally:
     #     await close_browser()
