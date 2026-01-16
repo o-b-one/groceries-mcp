@@ -19,7 +19,7 @@ services:
   shufersal_mcp:
     build: .
     ports:
-      - "58003:8000"
+      - "58003:8888"
     env_file:
       - .env
     environment:
