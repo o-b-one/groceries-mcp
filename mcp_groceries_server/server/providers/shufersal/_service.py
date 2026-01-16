@@ -17,7 +17,7 @@ CATALOG_ENDPOINT = f"{BASE_URL}/search/results?limit=10"
 CART_ENDPOINT = f"{BASE_URL}/cart"
 STORAGE_STATE = "auth_state.json"
 
-_browser: Optional[Browser] = None
+_browser: Optional[Browser | Playwright] = None
 _page: Optional[Page] = None
 _context: Optional[Any] = None
 _playwright_instance: Optional[Playwright] = None # Added for global playwright instance management
@@ -117,7 +117,21 @@ async def take_screenshot(page: Page, name: str):
     await page.screenshot(path=path)
     print(f"Screenshot saved to: {path}", file=sys.stderr)
 
+
+async def launch_local_browser(headless: bool = True) -> Page:
+    global _browser, _page, _playwright_instance
+    if not _browser or not _page:
+        _playwright_instance = await async_playwright().start() # Start Playwright instance
+        _browser = await _playwright_instance.chromium.launch_persistent_context(
+            user_data_dir=os.environ.get("USER_DATA_PATH", "/var/lib/groceries_mcp_data/"),
+            headless=headless
+        )
+        _page = await _browser.new_page()
+        await _page.goto(BASE_URL)
+    return _page
+
 async def launch_browser() -> Page:
+    return await launch_local_browser()
     global _browser, _page, _context, _playwright_instance
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start()

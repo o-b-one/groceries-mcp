@@ -34,18 +34,21 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             **Preferences:**
             {preferences or "None"}
 
-            ### Step 1: Search for items and add to basket
+            ### Step 1: Search for items and add to cart
             - Search each item in the list while considering the user preferences.
-            - Collect the IDs as you will need them for the next step to update the basekt
-            - Use the relevant tools to add and remove items to the basket based on the findings from previous step
+            - Collect the IDs and selling method as you will need them for the next step to update the cart
+            - You must use `add_items_to_cart` to add items to the cart based on the findings from previous step
+            - Assume authotization already took place
+            - provide the quantity from the user shopping list. If quantity not provided, use quantity of 1
+            
             #### Shopping List:
                 {shopping_list}
 
             **Important:**
             - You must follow the list by adding only items found in the list and by the user preferences, nothing more
-            - If the basket contains items not found in the list you should remove those items
-            - If item is not found try to find an alternative, add it to the basket with quantity 1
+            - If item is not found try to find an alternative
             ---
+
             ### Step 2: Conclusion
             
             Return the user the following details:

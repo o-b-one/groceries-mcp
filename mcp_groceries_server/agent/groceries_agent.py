@@ -17,8 +17,20 @@ logger = getLogger()
 
 MCP_ENDPOINT = os.environ.get("MCP_ENDPOINT", "http://localhost:8000/mcp")
 INFERENCE_ENDPOINT = os.environ.get("INFERENCE_ENDPOINT", "http://localhost:1234/v1")
-
+openai_api_base="https://openrouter.ai/api/v1",
 def create_llm_client(model_id: str):
+    if OPENROUTER_API_KEY := os.environ.get("OPENROUTER_API_KEY"):
+        return ChatOpenAI(
+            model=model_id,
+            api_key=OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1",
+        )
+    if GROQ_API_KEY := os.environ.get("GROQ_API_KEY"):
+        return ChatOpenAI(
+            model=model_id,
+            api_key=GROQ_API_KEY,
+            base_url="https://api.groq.com/openai/v1",
+        )
     if "gemini" in model_id or "gemma" in model_id:
         return ChatGoogleGenerativeAI(
             model=model_id,
@@ -52,7 +64,7 @@ class GroceriesAgent:
         with self.console.status("[bold green] Start shopping") as status:
             # async with stdio_client(main_server_params) as (read, write), stdio_client(shufersal_server_params) as (sread, swrite) :
             #     async with ClientSession(read, write) as session, ClientSession(sread, swrite) as shufersal_session:
-            async with streamablehttp_client(MCP_ENDPOINT, timeout=60 * 3) as (read, write, _):
+            async with streamablehttp_client(MCP_ENDPOINT, timeout=60 * 60) as (read, write, _):
                 async with ClientSession(read, write) as session:
                     # sessions = [session, shufersal_session]
                     # await asyncio.gather(*[session.initialize() for session in sessions])
