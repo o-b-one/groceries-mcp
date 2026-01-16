@@ -1,4 +1,4 @@
-
+ 
 import asyncio
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,8 +11,41 @@ from rich.console import Console
 from google.api_core.exceptions import ResourceExhausted
 from logging import getLogger
 from mcp_groceries_server.agent import variables
+from langchain.callbacks.base import BaseCallbackHandler
+from langchain.schema import AgentAction, AgentFinish
 
 logger = getLogger()
+
+
+class AgentDebugCallback(BaseCallbackHandler):
+    def __init__(self, console: Console):
+        self.console = console
+        self.step_count = 0
+
+    def on_llm_start(self, serialized, prompts, run_id=None, parent_run_id=None, tags=None, **kwargs):
+        self.step_count += 1
+        self.console.log(f"\n[bold magenta]Step {self.step_count}:[/bold magenta] Agent thinking...")
+
+    def on_agent_action(self, action: AgentAction, run_id=None, parent_run_id=None, **kwargs):
+        self.console.log(f"[bold yellow]Agent Action:[/bold yellow] {action.tool}")
+        self.console.log(f"  [dim]Thought:[/dim] {action.log}")
+        self.console.log(f"  [dim]Input:[/dim] {action.tool_input}")
+
+    def on_agent_finish(self, finish: AgentFinish, run_id=None, parent_run_id=None, **kwargs):
+        self.console.log(f"[bold green]Agent finished:[/bold green]")
+        self.console.log(f"  [dim]Output:[/dim] {finish.return_values}")
+
+    def on_tool_start(self, serialized, input_str, run_id=None, parent_run_id=None, tags=None, metadata=None, **kwargs):
+        tool_name = serialized.get("name", "unknown")
+        self.console.log(f"[bold cyan]→ Executing tool:[/bold cyan] {tool_name}")
+        if isinstance(input_str, dict):
+            self.console.log(f"  [dim]Parameters:[/dim] {input_str}")
+
+    def on_tool_end(self, output, run_id=None, parent_run_id=None, **kwargs):
+        self.console.log(f"[dim]✓ Tool completed[/dim]")
+
+    def on_tool_error(self, error, run_id=None, parent_run_id=None, **kwargs):
+        self.console.log(f"[bold red]✗ Tool error:[/bold red] {error}")
 
 
 MCP_ENDPOINT = os.environ.get("MCP_ENDPOINT", "http://localhost:8000/mcp")
@@ -74,6 +107,12 @@ class GroceriesAgent:
                     # tools_session = shufersal_session if vendor == "shufersal" else session
                     tools_session = session
                     tools = await load_mcp_tools(tools_session)
+                    
+                    if debug:
+                        self.console.log(f"[bold yellow]Available tools:[/bold yellow] {len(tools)} tools loaded")
+                        for tool in tools:
+                            self.console.log(f"  - [dim]{tool.name}[/dim]: {tool.description[:80]}...")
+                    
                     try:
                         async with asyncio.timeout(60):
                             logger.info("going to try to login")
@@ -90,11 +129,21 @@ class GroceriesAgent:
                     )
                     prompts = [msg.content.text for msg in prompts_result.messages]
                     agent = create_react_agent(self._model, tools) 
+                    
+                    config = {"recursion_limit": 100}
+                    
                     status.update(status="[bold green] Shopping for groceries...")
-                    result = await agent.with_retry(
-                        retry_if_exception_type=(ResourceExhausted,)
-                    ).ainvoke(
-                        {"messages": prompts}, {"recursion_limit": 100}
-                    )
+                    if debug:
+                        result = await agent.with_retry(
+                            retry_if_exception_type=(ResourceExhausted,)
+                        ).ainvoke(
+                            {"messages": prompts}, config, callbacks=[AgentDebugCallback(self.console)]
+                        )
+                    else:
+                        result = await agent.with_retry(
+                            retry_if_exception_type=(ResourceExhausted,)
+                        ).ainvoke(
+                            {"messages": prompts}, config
+                        )
                     status.update(status="[bold green] Shopping completed!")
                     return result
