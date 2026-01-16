@@ -131,7 +131,7 @@ async def launch_local_browser(headless: bool = True) -> Page:
     return _page
 
 async def launch_browser() -> Page:
-    return await launch_local_browser()
+    # return await launch_local_browser()
     global _browser, _page, _context, _playwright_instance
     if not _browser or not _page:
         _playwright_instance = await async_playwright().start()
