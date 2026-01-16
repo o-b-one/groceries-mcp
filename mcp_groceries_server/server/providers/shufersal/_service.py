@@ -4,7 +4,7 @@ import typing
 import sys
 from typing import Optional, Any
 
-from playwright.async_api import Playwright, Browser, async_playwright, Page
+from playwright.async_api import Playwright, Browser, async_playwright, Page, BrowserContext
 from httpx import AsyncClient
 from mcp_groceries_server.server import types
 from dotenv import load_dotenv
@@ -19,7 +19,7 @@ STORAGE_STATE = "auth_state.json"
 
 _browser: Optional[Browser | Playwright] = None
 _page: Optional[Page] = None
-_context: Optional[Any] = None
+_context: Optional[BrowserContext] = None
 _playwright_instance: Optional[Playwright] = None # Added for global playwright instance management
 
 # Default headers for Playwright requests to mimic a real browser
@@ -152,18 +152,20 @@ async def launch_browser() -> Page:
 
 async def close_browser() -> None:
     global _browser, _page, _context, _playwright_instance
+    
     if _page:
         await _page.reload()
     if _context:
         await _context.close()
-        _context = None
-    if _browser:
-        await _browser.close()
-        _browser = None
-        _page = None
+    if isinstance(_browser, Browser):
+        await _browser.close()    
     if _playwright_instance:
         await _playwright_instance.stop()
-        _playwright_instance = None
+    
+    _context = None
+    _browser = None
+    _page = None
+    _playwright_instance = None
 
 async def _execute_browser_script(page: Page, script: str, args: Optional[typing.Dict[str, typing.Any]] = None) -> Any:
     """
@@ -296,6 +298,7 @@ async def authorize():
                 raise
             else:
                 # If we are not on AUTH_URL, we might be logged in
+                await page.reload()
                 return
 
         if (password := os.environ.get("PASSWORD")) and (username := os.environ.get("USERNAME")):

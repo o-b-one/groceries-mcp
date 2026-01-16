@@ -29,6 +29,7 @@ services:
       - /var/lib/groceries_mcp_data:/var/lib/groceries_mcp_data/
     depends_on:
       - playwright-server
+    restart: always
 
   playwright-server:
     image: mcr.microsoft.com/playwright:v1.57.0-noble
@@ -38,6 +39,7 @@ services:
     environment:
       SCREEN_WIDTH: 1920
       SCREEN_HEIGHT: 1080
+    restart: always
 
   agent:
     build: 
@@ -53,7 +55,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-      
+    restart: always  
 
 
   
