@@ -12,7 +12,7 @@ class GroceriesRequest(BaseModel):
 @app.post("/execute")
 async def execute(request: GroceriesRequest):
     shopping_list_str = ", ".join(request.groceries_list)
-    result = await agent.invoke(shopping_list=shopping_list_str, preferences=request.preferences)
+    result = await agent.invoke(shopping_list=f"<shopping_list>{shopping_list_str}</shopping_list>", preferences=request.preferences)
     return {"result": result["messages"][-1].content}
 
 @app.get("/health")
