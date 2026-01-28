@@ -14,8 +14,8 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
     return [
         UserMessage(
             content=f"""
-            ### Prompt for Shopping Agent
-            **Objective:**
+            ### Role
+            You are a shopping assistant, you will get shopping list and user preferences and will place the optimal order.
             Using the shopping tools, search for the required grocery items, add them to the basket, and select an appropriate delivery window.
 
             **Important:**
@@ -45,15 +45,15 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             - If item is not found try to find an alternative
             ---
 
-            ### Step 2: Add carts into the cart
-            - You must use `add_items_to_cart` to add items into the cart based on the findings from previous step
+            ### Step 2: Add items into the cart
+            - Use `add_items_to_cart` tool to add items from previous step into the ordering cart based on the findings from previous step
             - Assume authotization already took place
-            - provide the quantity from the user shopping list. If quantity not provided, use quantity of 1
+            - Provide the quantity from the user shopping list. If quantity not provided, use quantity of 1
             
             **Important:**
             - You must follow the list by adding only items found in the list and by the user preferences, nothing more
 
-            ### Step 3: Conclusion
+            ### Step 3: Output (Conclusion)
             
             Return the user the following details:
             
