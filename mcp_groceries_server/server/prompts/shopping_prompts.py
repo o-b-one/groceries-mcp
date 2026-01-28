@@ -34,22 +34,26 @@ def start_shopping(shopping_list: str, preferences: str) -> list[UserMessage]:
             **Preferences:**
             {preferences or "None"}
 
-            ### Step 1: Search for items and add to cart
+            ### Step 1: Search for items
             - Search each item in the list while considering the user preferences.
             - Collect the IDs and selling method as you will need them for the next step to update the cart
-            - You must use `add_items_to_cart` to add items to the cart based on the findings from previous step
-            - Assume authotization already took place
-            - provide the quantity from the user shopping list. If quantity not provided, use quantity of 1
             
             #### Shopping List:
                 {shopping_list}
 
             **Important:**
-            - You must follow the list by adding only items found in the list and by the user preferences, nothing more
             - If item is not found try to find an alternative
             ---
 
-            ### Step 2: Conclusion
+            ### Step 2: Add carts into the cart
+            - You must use `add_items_to_cart` to add items into the cart based on the findings from previous step
+            - Assume authotization already took place
+            - provide the quantity from the user shopping list. If quantity not provided, use quantity of 1
+            
+            **Important:**
+            - You must follow the list by adding only items found in the list and by the user preferences, nothing more
+
+            ### Step 3: Conclusion
             
             Return the user the following details:
             
